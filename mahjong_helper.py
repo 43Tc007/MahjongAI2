@@ -21,21 +21,35 @@ def seat(player: int, game_wind: int):
 def is_zi(tile: int):
     return is_wind(tile) or is_dragon(tile)
 
-tiles_name = {
-    # Manzu (characters)
-    0: "1m", 1: "2m", 2: "3m", 3: "4m", 4: "5m", 5: "6m", 6: "7m", 7: "8m", 8: "9m",
-    # Pinzu (dots)
-    9: "1p", 10: "2p", 11: "3p", 12: "4p", 13: "5p", 14: "6p", 15: "7p", 16: "8p", 17: "9p",
-    # Souzu (bamboo)
-    18: "1s", 19: "2s", 20: "3s", 21: "4s", 22: "5s", 23: "6s", 24: "7s", 25: "8s", 26: "9s",
-    # Winds
-    27: "E", 28: "S", 29: "W", 30: "N",
-    # Dragons
-    31: "white", 32: "green", 33: "red",
-    # Red flowers
-    34: "red flower 1", 35: "red flower 2", 36: "red flower 3", 37: "red flower 4",
-    # Black flowers
-    38: "black flower 1", 39: "black flower 2", 40: "black flower 3", 41: "black flower 4"
+action_name = {
+    # Discard actions (tiles)
+    0: "discard 1m", 1: "discard 2m", 2: "discard 3m", 3: "discard 4m", 4: "discard 5m", 
+    5: "discard 6m", 6: "discard 7m", 7: "discard 8m", 8: "discard 9m",
+    9: "discard 1p", 10: "discard 2p", 11: "discard 3p", 12: "discard 4p", 13: "discard 5p", 
+    14: "discard 6p", 15: "discard 7p", 16: "discard 8p", 17: "discard 9p",
+    18: "discard 1s", 19: "discard 2s", 20: "discard 3s", 21: "discard 4s", 22: "discard 5s", 
+    23: "discard 6s", 24: "discard 7s", 25: "discard 8s", 26: "discard 9s",
+    27: "discard E", 28: "discard S", 29: "discard W", 30: "discard N",
+    31: "discard white", 32: "discard green", 33: "discard red",
+    34: "discard red flower 1", 35: "discard red flower 2", 36: "discard red flower 3", 37: "discard red flower 4",
+    38: "discard black flower 1", 39: "discard black flower 2", 40: "discard black flower 3", 41: "discard black flower 4",
+
+    # Kan actions (tile + 34)
+    42: "kan 1m", 43: "kan 2m", 44: "kan 3m", 45: "kan 4m", 46: "kan 5m", 47: "kan 6m", 
+    48: "kan 7m", 49: "kan 8m", 50: "kan 9m",
+    51: "kan 1p", 52: "kan 2p", 53: "kan 3p", 54: "kan 4p", 55: "kan 5p", 56: "kan 6p", 
+    57: "kan 7p", 58: "kan 8p", 59: "kan 9p",
+    60: "kan 1s", 61: "kan 2s", 62: "kan 3s", 63: "kan 4s", 64: "kan 5s", 65: "kan 6s", 
+    66: "kan 7s", 67: "kan 8s",
+
+    # Special melds and win actions
+    68: "chow high",     # chow with +1,+2
+    69: "chow mid",      # chow with -1,+1
+    70: "chow low",      # chow with -2,-1
+    71: "pon",           # pung (triplet)
+    72: "ming kan",      # exposed kan
+    73: "ron/tsumo",     # winning (ron or tsumo depending on phase)
+    74: "pass"           # skip / no action
 }
 
 EAST = 0
