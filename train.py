@@ -11,6 +11,7 @@ from torch import nn, Tensor
 from functools import partial
 from tqdm.auto import tqdm
 
+
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(device)
 env = make_env()
@@ -153,31 +154,7 @@ class UnifiedQNetwork(nn.Module):
         phi = self.encoder(obs)
         phi = self.actv(phi)
         return self.fc_q(phi)
-
-# ---------------------------------------------------------------------
-# 2. Your exact configuration + test run
-# ---------------------------------------------------------------------
-    # Your exact instantiation, now with seq_len=29
-model = UnifiedQNetwork(
-    in_channels=42,
-    action_space=4,
-    seq_len=52,         # <-- Set to 29!
-    conv_channels=256,
-    num_blocks=4,
-)
-
-# Your exact input shape
-obs = torch.randn(8, 42, 52)   # batch=8, channels=34, seq_len=29
-
-# Forward pass - no more shape errors!
-output = model(obs)
-print(f"Input shape:  {obs.shape}")
-print(f"Output shape: {output.shape}")  # Expected: torch.Size([8, 75])
-
-# Optional: count parameters
-total_params = sum(p.numel() for p in model.parameters())
-print(f"Total parameters: {total_params:,}")
-
+    
 class MultiAgentAdapter(nn.Module):
     def __init__(self, model):
         super().__init__()
@@ -340,6 +317,8 @@ total_frames = frames_per_batch * n_iters
 minibatch_size = 1000
 
 if __name__ == "__main__":
+    policy.train()
+    critic.train()
     replay_buffer = ReplayBuffer(
         storage=LazyTensorStorage(
             frames_per_batch, device=device

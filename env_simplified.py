@@ -23,14 +23,7 @@ class MahjongGameEnv(AECEnv):
         self.possible_agents = [f"player_{i}" for i in range(4)]
         self.agents = self.possible_agents[:]
         self.agent_name_mapping = {name: i for i, name in enumerate(self.possible_agents)}
-
         self.render_mode = render_mode
-        self.gamestate: GameState = GameState(
-            round_wind=EAST,
-            game_wind=EAST,
-            current_player=EAST,
-            wall_remaining=144,
-        )
 
     def observation_space(self, agent) -> gymnasium.Space:
         return spaces.Dict({'observation': spaces.Box(low=0, high=255, shape=(34, 29), dtype=np.uint8), 'action_mask': spaces.Box(low=0, high=1, shape=(75,), dtype=np.uint8)})
@@ -89,13 +82,13 @@ class MahjongGameEnv(AECEnv):
         self.gamestate = GameState(
             round_wind=np.random.randint(0, 4),
             game_wind=np.random.randint(0, 4),
-            current_player=self.gamestate.game_wind,
+            current_player=EAST,
             wall_remaining=144,
         )
+        self.gamestate.current_player = self.gamestate.game_wind
         self.agent_selection = self.rotate_selector_by_index(self._agent_selector, idx=self.gamestate.game_wind)
-        self.mask: npt.NDArray[np.uint8] = np.zeros(75, dtype=np.uint8)
         self.deal_hands()
-        self.mask = self.generate_action_mask(EAST, self.gamestate.last_drawn)
+        self.mask = self.generate_action_mask(self.gamestate.current_player, self.gamestate.last_drawn)
         
     def deal_hands(self):
         for player_idx in range(4):
@@ -194,7 +187,7 @@ class MahjongGameEnv(AECEnv):
         }
 
         if terminate_type == "tsumo":
-            fan = calculate_fan(self.gamestate, winnning_player_idx, target_tile, verbose=True)
+            fan = calculate_fan(self.gamestate, winnning_player_idx, target_tile)
             winner = self.agents[winnning_player_idx]
             for agent in self.agents:
                 self.terminations[agent] = True
@@ -205,7 +198,7 @@ class MahjongGameEnv(AECEnv):
             self.infos[winner] = {'win_type': 'tsumo', 'fan': fan}
         elif terminate_type == "ron":
             self.gamestate.hands[winnning_player_idx][target_tile] += 1
-            fan = calculate_fan(self.gamestate, winnning_player_idx, target_tile, verbose=True)
+            fan = calculate_fan(self.gamestate, winnning_player_idx, target_tile)
             winner = self.agents[winnning_player_idx]
             loser = self.agents[losing_player_idx]
             for agent in self.agents:

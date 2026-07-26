@@ -93,8 +93,6 @@ class GameState:
     addkanable_tiles: List[Dict[int, int]] = field(default_factory=lambda: [{}, {}, {}, {}])
     men_qian_qing: List[bool] = field(default_factory=lambda: [True for _ in range(4)])
     action_array: np.ndarray  = field(default_factory=lambda: np.zeros(shape=(75,)))
-
-
     # Wall
     wall: List[int] = field(default_factory=_default_wall)
     
