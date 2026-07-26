@@ -173,19 +173,13 @@ class MahjongGameEnv(AECEnv):
     
     def terminate_game(self, target_tile: int = -1, winnning_player_idx: int = -1, losing_player_idx: int = -1, terminate_type="exhausted"):
         payout = {
-            3 : 1 / 16,
-            4 : 2 / 16,
-            5 : 3 / 16,
-            6 : 4 / 16,
-            7 : 6 / 16,
-            8 : 8 / 16,
-            9 : 12 / 16,
-            10 : 16 / 16,
-            11 : 24 / 16,
-            12 : 32 / 16,
-            13 : 48 / 16
+            3 : 0.375,
+            4 : 0.75,
+            5 : 1.125,
+            6 : 1.5,
+            7 : 2.25,
+            8 : 3
         }
-
         if terminate_type == "tsumo":
             fan = calculate_fan(self.gamestate, winnning_player_idx, target_tile)
             winner = self.agents[winnning_player_idx]

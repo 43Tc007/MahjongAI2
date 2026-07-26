@@ -2,6 +2,7 @@ from hand_divisor import divide_from_tensors, CHOW, PUNG, PAIR
 from mahjong_helper import *
 from typing import List, Tuple
 import numpy as np
+MAX_FAN = 8
 
 
 def flowers(flowers: np.ndarray, player: int, game_wind: int) -> int:
@@ -55,7 +56,7 @@ def qing_yao(division: List[Tuple[int, int]]) -> int:
     for _, tile in division:
         if not is_19(tile):
             return 0
-    return 13
+    return MAX_FAN
 
 def da_xiao_san_yuan(division: List[Tuple[int, int]]) -> int:
     seen = 0
@@ -70,7 +71,7 @@ def da_xiao_san_yuan(division: List[Tuple[int, int]]) -> int:
         return 0
     if pair_is_dragon:
         return 3 # 3+2=5
-    return 13
+    return MAX_FAN
 
 def qing_hun_yi_se(division: List[Tuple[int, int]]) -> int:
     suit = -1
@@ -90,7 +91,7 @@ def zi_yi_se(division: List[Tuple[int, int]]) -> int:
     for _, tile in division:
         if not is_zi(tile):
             return 0
-    return 13
+    return MAX_FAN
 
 def da_xiao_si_xi(division: List[Tuple[int, int]]) -> int:
     seen = 0
@@ -99,7 +100,7 @@ def da_xiao_si_xi(division: List[Tuple[int, int]]) -> int:
             seen += 1
     if seen != 4:
         return 0
-    return 13
+    return MAX_FAN
 
 def jiu_zi_lian_huan(hand: np.ndarray) -> int:
     if hand.sum() != 14:
@@ -109,15 +110,15 @@ def jiu_zi_lian_huan(hand: np.ndarray) -> int:
         if s.sum() != 14:
             continue
         if s[0] >= 3 and (s[1:8] >= 1).all().item() and s[8] >= 3:
-            return 13  # base is 0, 9, or 18, identifying the suit
+            return MAX_FAN  # base is 0, 9, or 18, identifying the suit
     return 0
 
 def si_gang_zi(calls: np.ndarray) -> int:
-    return 13 * int((calls.sum(axis=1) == 4).all().item())
+    return MAX_FAN * int((calls.sum(axis=1) == 4).all().item())
 
 def shi_san_yao(hand: np.ndarray) -> int:
     indices = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
-    return int((hand[indices] >= 1).all().item()) * 13
+    return int((hand[indices] >= 1).all().item()) * MAX_FAN
 
 def tsumo(game: GameState, player: int) -> int:
     return (game.current_player == player) * 1
@@ -125,12 +126,12 @@ def tsumo(game: GameState, player: int) -> int:
 def tian_hu(game: GameState, player: int) -> int:
     if player != EAST:
         return 0
-    return int((game.log[:, :42] == 0).all().item()) * 13
+    return int((game.log[:, :42] == 0).all().item()) * MAX_FAN
 
 def di_hu(game: GameState, player: int) -> int:
     if tsumo(game, player):
         return 0
-    return int((game.log[:, :42].sum() == 1).item()) * 13
+    return int((game.log[:, :42].sum() == 1).item()) * MAX_FAN
 
 def men_qian_qing(game: GameState, player: int) -> int:
     return int(game.men_qian_qing[player]) * 1
@@ -148,14 +149,14 @@ def kan_kan_hu(game: GameState, player: int, division: List[Tuple[int, int]], wi
     if not dui_dui_hu(division) or not men_qian_qing(game, player):
         return 0
     if tsumo(game, player):
-        return 13
+        return MAX_FAN
     else:
         pair_tile: int = [tile for pack_type, tile in division if pack_type == PAIR][0]
-        return (win_tile == pair_tile) * 13
+        return (win_tile == pair_tile) * MAX_FAN
 
 def hua_hu(game: GameState, player: int, win_tile: int) -> int:
     if is_flower(win_tile):
-        return int((game.flowers[player].sum() == 6) * 3 + (game.flowers[player].sum() == 7) * 13)
+        return int((game.flowers[player].sum() == 6) * 3 + (game.flowers[player].sum() == 7) * MAX_FAN)
     return 0
 
 def calculate_fan(
@@ -171,7 +172,7 @@ def calculate_fan(
     if shi_san_yao(game.hands[player]):
         if verbose:
             print("shi_san_yao:", shi_san_yao(game.hands[player]))
-        return 13
+        return MAX_FAN
 
     success, divisions = divide_from_tensors(game.hands[player], game.melds[player])
     if not success or len(divisions) == 0:
@@ -285,7 +286,7 @@ def calculate_fan(
         if verbose:
             print("No yaku (only 0‑fan hands).")
 
-    return min(13, max_fan)
+    return min(MAX_FAN, max_fan)
 
 
 

@@ -209,7 +209,7 @@ class StateAdapter(nn.Module):
 # 3. Instantiate policy and critic with correct shapes
 # =====================================================================
 
-def make_policy_critic(env, policy_model_path, critic_model_path):
+def make_policy_critic(env, policy_model_path=None, critic_model_path=None):
     # ------------------- POLICY -------------------
     base_net = UnifiedQNetwork(
         in_channels=34,
@@ -258,20 +258,13 @@ def make_policy_critic(env, policy_model_path, critic_model_path):
         in_keys=["state"],
         out_keys=[("agents", "state_value")],
     )
-
-    # policy = policy.to('cpu')
-    # critic = critic.to('cpu')
-    # x = policy(env.reset())
-    # y = critic(env.reset())
-    # actions = x[('agents', 'action')]
-    # state_values = y[('agents', 'state_value')].squeeze()
-    # print(f"Actions: {actions}, state_values: {state_values}")
-
     # Load the full model object
-    loaded_policy_net = torch.load(policy_model_path)
-    policy_net.load_state_dict(loaded_policy_net)
+    if policy_model_path is not None and critic_model_path is not None:
+        loaded_policy_net = torch.load(policy_model_path)
+        policy_net.load_state_dict(loaded_policy_net)
 
-    # Load the full model object
-    loaded_critic_net = torch.load(critic_model_path)
-    critic_net.load_state_dict(loaded_critic_net)
+        # Load the full model object
+        loaded_critic_net = torch.load(critic_model_path)
+        critic_net.load_state_dict(loaded_critic_net)
+
     return policy, critic
