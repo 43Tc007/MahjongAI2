@@ -260,11 +260,11 @@ def make_policy_critic(env, policy_model_path=None, critic_model_path=None):
     )
     # Load the full model object
     if policy_model_path is not None and critic_model_path is not None:
-        loaded_policy_net = torch.load(policy_model_path)
-        policy_net.load_state_dict(loaded_policy_net)
+        loaded_policy = torch.load(policy_model_path)
+        policy.load_state_dict(loaded_policy)
 
         # Load the full model object
-        loaded_critic_net = torch.load(critic_model_path)
-        critic_net.load_state_dict(loaded_critic_net)
+        loaded_critic = torch.load(critic_model_path)
+        critic.load_state_dict(loaded_critic)
 
     return policy, critic
