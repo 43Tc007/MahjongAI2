@@ -32,7 +32,7 @@ def train_PPO(n_iters=100):
     )
     gamma = 0.995  # discount factor
     lmbda = 0.9  # lambda for generalised advantage estimation
-    lr = 2e-4
+    lr = 1e-4
     loss_module.make_value_estimator(
         ValueEstimators.GAE, gamma=gamma, lmbda=lmbda
     )  
