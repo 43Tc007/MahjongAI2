@@ -10,7 +10,7 @@ from gymnasium.utils import seeding
 from mahjong_helper import GameState, EAST, SOUTH, WEST, NORTH, game_state_mask, game_state_array
 from typing import List
 from mahjong_helper import *
-from hand_divisor import regular_shanten, first_discard_shanten
+from hand_divisor import shanten
 from fan_calculator import calculate_fan
 from copy import deepcopy
 
@@ -89,7 +89,7 @@ class MahjongGameEnv(AECEnv):
         self.deal_hands()
         self.mask = self.generate_action_mask(self.gamestate.current_player, self.gamestate.last_drawn)
         ### shanten update
-        
+        self.shantens = {agent: shanten(self.gamestate.hands[self.agent_name_mapping[agent]]) for agent in self.agents}
         ### shanten update
         
     def deal_hands(self):
@@ -234,6 +234,15 @@ class MahjongGameEnv(AECEnv):
         elif self.gamestate.phase == DISCARD:
             execute_discard(self.gamestate, player_idx, int(action))
             # shanten update
+            prev_shanten = self.shantens[agent]
+            self.shantens[agent] = shanten(self.gamestate.hands[player_idx])
+            new_shanten = self.shantens[agent]
+            if new_shanten < prev_shanten:
+                self.rewards[agent] += 0.01
+            elif new_shanten > prev_shanten:
+                self.rewards[agent] -= 0.01
+            else:
+                assert new_shanten == prev_shanten
             # shanten update
             assert self.gamestate.hands[self.gamestate.current_player].sum() % 3 == 1
         elif self.gamestate.phase == WAIT_RESPONSE:

@@ -141,7 +141,10 @@ def regular_shanten(hand_array: np.ndarray) -> int:
 
 def shanten(hand_array: np.ndarray) -> int:
     """Return the minimum of regular shanten and orphan shanten."""
-    return min(regular_shanten(hand_array), orphan_shanten(hand_array))
+    if hand_array.sum() % 3 == 1:
+        return min(regular_shanten(hand_array), orphan_shanten(hand_array))
+    assert hand_array.sum() % 3 == 2
+    return first_discard_shanten(hand_array)
 
 
 def first_discard_shanten(hand_array: np.ndarray) -> int:

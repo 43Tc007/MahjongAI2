@@ -47,6 +47,7 @@ def main():
             # Step the environment
             screen.fill('white')
             render_game_state(env.gamestate, screen, font)
+            print(env.rewards)
             pygame.display.update()
             time.sleep(1)
 
