@@ -464,5 +464,4 @@ def hand_array_to_string(hand: npt.NDArray):
     res = []
     for tile, count in enumerate(hand[:34]):   
         [res.append(tiles_name[tile]) for _ in range(count)]
-
     return res
