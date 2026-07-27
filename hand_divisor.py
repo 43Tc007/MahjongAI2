@@ -76,7 +76,7 @@ def regular_shanten(hand_array: np.ndarray) -> int:
     counts = [int(x) for x in hand_array[:TILE_COUNT]]
     tile_count = int(sum(counts))
     if tile_count not in {13, 10, 7, 4, 1}:
-        raise ValueError("hand size must be one of 13, 10, 7, 4, or 1 for this regular shanten computation")
+        raise ValueError(f"hand size must be one of 13, 10, 7, 4, or 1 for this regular shanten computation. Got {tile_count}")
 
     fixed_melds = (13 - tile_count) // 3
 

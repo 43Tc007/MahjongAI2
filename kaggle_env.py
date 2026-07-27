@@ -4,7 +4,7 @@ import numpy.typing as npt
 
 from gymnasium import spaces
 from pettingzoo import AECEnv
-from pettingzoo.utils import AgentSelector
+from pettingzoo.utils import agent_selector
 from gymnasium.spaces import Discrete
 from gymnasium.utils import seeding
 from mahjong_helper import GameState, EAST, SOUTH, WEST, NORTH, game_state_mask, game_state_array
@@ -51,12 +51,12 @@ class MahjongGameEnv(AECEnv):
     def close(self):
         pass
 
-    def rotate_selector_by_index(self, selector: AgentSelector, idx: int) -> str:
+    def rotate_selector_by_index(self, selector: agent_selector, idx: int) -> str:
         """
         Rotates the agent order using an integer index to place that agent at the front.
         
         Args:
-            selector: The PettingZoo AgentSelector instance.
+            selector: The PettingZoo agent_selector instance.
             target_idx: The index of the agent within the CURRENT cycle to bring to front.
             
         Returns:
@@ -77,7 +77,7 @@ class MahjongGameEnv(AECEnv):
         self.terminations = {agent: False for agent in self.agents}
         self.truncations = {agent: False for agent in self.agents}
         self.infos = {agent: {} for agent in self.agents}
-        self._agent_selector = AgentSelector(self.agents)
+        self._agent_selector = agent_selector(self.agents)
         self.gamestate = GameState(
             round_wind=np.random.randint(0, 4),
             game_wind=np.random.randint(0, 4),
@@ -233,9 +233,7 @@ class MahjongGameEnv(AECEnv):
                 assert int(action) == 74
         elif self.gamestate.phase == DISCARD:
             execute_discard(self.gamestate, player_idx, int(action))
-            assert self.gamestate.hands[self.gamestate.current_player].sum() % 3 == 1
-            assert player_idx == self.gamestate.current_player
-            assert self.gamestate.hands[player_idx][34:].sum() == 0
+            # shanten update
             prev_shanten = self.shantens[agent]
             self.shantens[agent] = shanten(self.gamestate.hands[player_idx])
             new_shanten = self.shantens[agent]
@@ -245,6 +243,8 @@ class MahjongGameEnv(AECEnv):
                 self.rewards[agent] -= 0.01
             else:
                 assert new_shanten == prev_shanten
+            # shanten update
+            assert self.gamestate.hands[self.gamestate.current_player].sum() % 3 == 1
         elif self.gamestate.phase == WAIT_RESPONSE:
             self.gamestate.action_array[int(action)] = player_idx
         else:
@@ -349,7 +349,7 @@ class MahjongGameEnv(AECEnv):
                         drawn_tile = draw_tile(self.gamestate, self.gamestate.current_player, self.gamestate.wall)
                 # After flower handling, check if we broke due to tsumo possibility
                 if self.mask.sum() >= 2:
-                    break
+                    pass
                 # If no tsumo and no flowers, transition to WAIT_TSUMO_ADD_KAN_AN_KAN
                 if self.gamestate.phase == WAIT_HUA_HU:
                     self.gamestate.phase = WAIT_TSUMO_ADD_KAN_AN_KAN

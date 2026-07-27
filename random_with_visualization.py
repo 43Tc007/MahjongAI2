@@ -47,9 +47,8 @@ def main():
             # Step the environment
             screen.fill('white')
             render_game_state(env.gamestate, screen, font)
-            print(env.rewards)
             pygame.display.update()
-            time.sleep(1)
+            time.sleep(0.001)
 
             # If the round ended, break out of the loop (the next reset will start a new one)
             if env.terminations[agent]:
