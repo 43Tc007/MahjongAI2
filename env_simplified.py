@@ -8,10 +8,9 @@ from pettingzoo.utils import AgentSelector
 from gymnasium.spaces import Discrete
 from gymnasium.utils import seeding
 from mahjong_helper import GameState, EAST, SOUTH, WEST, NORTH, game_state_mask, game_state_array
-
 from typing import List
 from mahjong_helper import *
-
+from hand_divisor import regular_shanten, first_discard_shanten
 from fan_calculator import calculate_fan
 from copy import deepcopy
 
@@ -89,6 +88,9 @@ class MahjongGameEnv(AECEnv):
         self.agent_selection = self.rotate_selector_by_index(self._agent_selector, idx=self.gamestate.game_wind)
         self.deal_hands()
         self.mask = self.generate_action_mask(self.gamestate.current_player, self.gamestate.last_drawn)
+        ### shanten update
+        
+        ### shanten update
         
     def deal_hands(self):
         for player_idx in range(4):
@@ -214,7 +216,7 @@ class MahjongGameEnv(AECEnv):
     def step(self, action) -> None:
         agent = self.agent_selection
         player_idx = self.agent_name_mapping[agent]
-
+        self.rewards = {agent: 0.0 for agent in self.agents}
         # ---- Execute the chosen action ----
         if self.gamestate.phase == WAIT_TSUMO_ADD_KAN_AN_KAN:
             if 34 <= int(action) <= 67:
@@ -231,6 +233,8 @@ class MahjongGameEnv(AECEnv):
                 assert int(action) == 74
         elif self.gamestate.phase == DISCARD:
             execute_discard(self.gamestate, player_idx, int(action))
+            # shanten update
+            # shanten update
             assert self.gamestate.hands[self.gamestate.current_player].sum() % 3 == 1
         elif self.gamestate.phase == WAIT_RESPONSE:
             self.gamestate.action_array[int(action)] = player_idx

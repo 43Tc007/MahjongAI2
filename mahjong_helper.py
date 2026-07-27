@@ -2,6 +2,7 @@ import numpy as np
 from typing import List, Dict, Optional
 from dataclasses import dataclass, field
 import random
+import numpy.typing as npt
 
 def is_flower(idx: int) -> bool:
     return idx >= 34
@@ -50,6 +51,18 @@ action_name = {
     72: "ming kan",      # exposed kan
     73: "ron/tsumo",     # winning (ron or tsumo depending on phase)
     74: "pass"           # skip / no action
+}
+
+tiles_name = {
+    0: "1m", 1: "2m", 2: "3m", 3: "4m", 4: "5m",
+    5: "6m", 6: "7m", 7: "8m", 8: "9m",
+    9: "1p", 10: "2p", 11: "3p", 12: "4p", 13: "5p",
+    14: "6p", 15: "7p", 16: "8p", 17: "9p",
+    18: "1s", 19: "2s", 20: "3s", 21: "4s", 22: "5s",
+    23: "6s", 24: "7s", 25: "8s", 26: "9s",
+    27: "E", 28: "S", 29: "W", 30: "N",
+    31: "white", 32: "green", 33: "red",
+    34: "red flower 1"
 }
 
 EAST = 0
@@ -446,3 +459,10 @@ def execute_flower(gamestate: GameState, player_idx: int, tile: int) -> None:
     gamestate.log[gamestate.logline][tile] += 1
     gamestate.log[gamestate.logline][42 + player_idx] += 1
     gamestate.logline += 1
+
+def hand_array_to_string(hand: npt.NDArray):
+    res = []
+    for tile, count in enumerate(hand[:34]):   
+        [res.append(tiles_name[tile]) for _ in range(count)]
+
+    return res

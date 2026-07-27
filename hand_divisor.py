@@ -1,6 +1,7 @@
 import numpy as np
 from typing import List, Optional, Tuple, cast
 from collections import Counter
+from functools import lru_cache
 
 # ------------------------------------------------------------------
 # Constants
@@ -8,6 +9,7 @@ from collections import Counter
 TILE_COUNT = 34
 ALL_TILES = list(range(TILE_COUNT))
 PAIR, PUNG, CHOW = 0, 1, 2
+DUO = 3
 
 TILE_NAMES = {
     0: "1m", 1: "2m", 2: "3m", 3: "4m", 4: "5m", 5: "6m", 6: "7m", 7: "8m", 8: "9m",
@@ -37,8 +39,136 @@ def pack_to_str(p: Tuple[int, int]) -> str:
         return f"pung({TILE_NAMES[tile]})"   # could also be a kan, but we don't distinguish
     elif typ == CHOW:
         return f"chow({TILE_NAMES[tile-1]}-{TILE_NAMES[tile]}-{TILE_NAMES[tile+1]})"
+    elif typ == DUO:
+        return f"duo({TILE_NAMES[tile]}-{TILE_NAMES[tile+1]})"
     else:
         return "unknown"
+
+
+def orphan_shanten(hand_array: np.ndarray) -> int:
+    counts = [int(x) for x in hand_array[:TILE_COUNT]]
+    orphan_indices = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
+    present = [idx for idx in orphan_indices if counts[idx] > 0]
+    distinct = len(present)
+    has_pair = any(counts[idx] >= 2 for idx in orphan_indices)
+    return 13 - distinct - int(has_pair)
+
+
+def regular_shanten(hand_array: np.ndarray) -> int:
+    """
+    Estimate regular shanten by decomposing the hand into the best combination of
+    melds, pairs and consecutive duos.
+
+    A complete meld is either:
+    - a pung (three identical tiles)
+    - a chow (three consecutive tiles of the same suit)
+
+    A four-of-a-kind is handled as a pung plus one leftover tile, which is still
+    available for later pairing or chow construction.
+
+    A pair is two identical tiles, a duo is two consecutive tiles of the same
+    numbered suit, and a gap part is two tiles separated by one missing tile
+    (for example 3s and 5s). Each meld is worth two points, while a pair, duo,
+    or gap part is worth one. Only the best five parts contribute to the score.
+    """
+    # The hand array is a 34-entry count vector. Indices 0-26 are numbered tiles
+    # (0-8 = man, 9-17 = pin, 18-26 = sou), while 27-33 are honours.
+    counts = [int(x) for x in hand_array[:TILE_COUNT]]
+    tile_count = int(sum(counts))
+    if tile_count not in {13, 10, 7, 4, 1}:
+        raise ValueError("hand size must be one of 13, 10, 7, 4, or 1 for this regular shanten computation")
+
+    fixed_melds = (13 - tile_count) // 3
+
+    @lru_cache(maxsize=None)
+    def best_part_score(counts_tuple: Tuple[int, ...], parts_used: int) -> int:
+        if parts_used >= 5:
+            return 0
+
+        best_score = 0
+        counts = list(counts_tuple)
+
+        for tile in ALL_TILES:
+            # A four-of-a-kind is treated as a pung plus one spare tile that can still
+            # participate in a later duo or chow.
+            if counts[tile] >= 3:
+                counts[tile] -= 3
+                best_score = max(best_score, 2 + best_part_score(tuple(counts), parts_used + 1))
+                counts[tile] += 3
+
+        for tile in range(TILE_COUNT):
+            if not is_numbered_suit(tile):
+                continue
+            rank = tile % 9
+            if rank <= 6 and counts[tile] > 0 and counts[tile + 1] > 0 and counts[tile + 2] > 0:
+                counts[tile] -= 1
+                counts[tile + 1] -= 1
+                counts[tile + 2] -= 1
+                best_score = max(best_score, 2 + best_part_score(tuple(counts), parts_used + 1))
+                counts[tile] += 1
+                counts[tile + 1] += 1
+                counts[tile + 2] += 1
+
+        for tile in ALL_TILES:
+            if counts[tile] >= 2:
+                counts[tile] -= 2
+                best_score = max(best_score, 1 + best_part_score(tuple(counts), parts_used + 1))
+                counts[tile] += 2
+
+        for tile in range(TILE_COUNT):
+            if not is_numbered_suit(tile):
+                continue
+            rank = tile % 9
+            if rank <= 7 and counts[tile] > 0 and counts[tile + 1] > 0:
+                counts[tile] -= 1
+                counts[tile + 1] -= 1
+                best_score = max(best_score, 1 + best_part_score(tuple(counts), parts_used + 1))
+                counts[tile] += 1
+                counts[tile + 1] += 1
+
+            if rank <= 6 and counts[tile] > 0 and counts[tile + 2] > 0:
+                counts[tile] -= 1
+                counts[tile + 2] -= 1
+                best_score = max(best_score, 1 + best_part_score(tuple(counts), parts_used + 1))
+                counts[tile] += 1
+                counts[tile + 2] += 1
+
+        return best_score
+
+    points = best_part_score(tuple(counts), 0)
+    return 8 - 2 * fixed_melds - points
+
+
+def shanten(hand_array: np.ndarray) -> int:
+    """Return the minimum of regular shanten and orphan shanten."""
+    return min(regular_shanten(hand_array), orphan_shanten(hand_array))
+
+
+def first_discard_shanten(hand_array: np.ndarray) -> int:
+    """
+    For a 14-tile hand, compute the minimum shanten value obtainable by discarding
+    one tile and then evaluating the resulting 13-tile hand.
+    """
+    counts = [int(x) for x in hand_array[:TILE_COUNT]]
+    tile_count = int(sum(counts))
+    if tile_count != 14:
+        raise ValueError("first_discard_shanten expects a 14-tile hand")
+
+    best_value = None
+    for tile in range(TILE_COUNT):
+        if counts[tile] == 0:
+            continue
+        counts[tile] -= 1
+        reduced = np.zeros(TILE_COUNT, dtype=np.int64)
+        reduced[:TILE_COUNT] = counts
+        value = shanten(reduced)
+        if best_value is None or value < best_value:
+            best_value = value
+        counts[tile] += 1
+
+    if best_value is None:
+        raise ValueError("hand must contain at least one tile to discard")
+    return best_value
 
 # ------------------------------------------------------------------
 # Core recursive algorithm (unchanged)

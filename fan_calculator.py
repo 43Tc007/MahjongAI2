@@ -118,7 +118,7 @@ def si_gang_zi(calls: np.ndarray) -> int:
 
 def shi_san_yao(hand: np.ndarray) -> int:
     indices = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
-    return int((hand[indices] >= 1).all().item()) * MAX_FAN
+    return int((hand[indices] >= 1).all().item() and bool(np.sum(hand[indices]) == 14)) * MAX_FAN
 
 def tsumo(game: GameState, player: int) -> int:
     return (game.current_player == player) * 1

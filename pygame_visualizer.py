@@ -43,7 +43,7 @@ tiles_unicode = {
 
 def array_to_tile_string(tile_counter: np.ndarray) -> str:
     """
-    Convert a torch.Tensor([42]) tile counter into a concatenated string of Mahjong Unicode tiles.
+    Convert a np.ndarray([42]) tile counter into a concatenated string of Mahjong Unicode tiles.
     """
     result: list[str] = []
     for idx, count_tensor in enumerate(tile_counter):

@@ -8,12 +8,13 @@ from torchrl.objectives import ClipPPOLoss, ValueEstimators
 from env_simplified import make_env
 from ai_setup import make_policy_critic
 import os
+import argparse
 
-def train_PPO():
+def train_PPO(n_iters=100):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     env = make_env()
-    policy, critic = make_policy_critic(env, 'policy_6.pth', 'critic_6.pth')
+    policy, critic = make_policy_critic(env, 'policy_8.pth', 'critic_8.pth')
 
     policy = policy.to(device)
     loss_module = ClipPPOLoss(
@@ -44,7 +45,6 @@ def train_PPO():
     num_epochs = 5
     max_grad_norm = 0.2
     frames_per_batch = 2048  # Number of team frames collected per training iteration
-    n_iters = 400 # Number of sampling and training iterations
     total_frames = frames_per_batch * n_iters
     minibatch_size = 256
 
@@ -113,12 +113,15 @@ def train_PPO():
 
         collector.update_policy_weights_()
         if it % 200 == 0 and it > 0:
-            torch.save(policy.state_dict(), 'policy_8.pth')
-            torch.save(critic.state_dict(), 'critic_8.pth')
+            torch.save(policy.state_dict(), 'policy_9.pth')
+            torch.save(critic.state_dict(), 'critic_9.pth')
 
-    torch.save(policy.state_dict(), 'policy_8.pth')
-    torch.save(critic.state_dict(), 'critic_8.pth')
+    torch.save(policy.state_dict(), 'policy_9.pth')
+    torch.save(critic.state_dict(), 'critic_9.pth')
     os.system("shutdown /s /t 0")
 
 if __name__ == "__main__":
-    train_PPO()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--n_iters", type=int, default=400, help="Number of training iterations")
+    args = parser.parse_args()
+    train_PPO(n_iters=args.n_iters)
