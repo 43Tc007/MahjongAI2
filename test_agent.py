@@ -297,7 +297,7 @@ def main():
     if args.device:
         device = args.device
     else:
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        device = 'cpu'
 
     # Build policy and environment
     policy, env = build_policy(device=device) 
@@ -320,7 +320,7 @@ def main():
     # Load into the policy's underlying network.
     # The policy is a ProbabilisticActor; its module is policy_module, which contains the nn.Sequential.
     # The state_dict keys correspond to the nested modules.
-    policy.module.load_state_dict(state_dict, strict=False)
+    policy.load_state_dict(state_dict, strict=False)
     print("Model loaded successfully.")
 
     # Run test
