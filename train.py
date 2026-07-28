@@ -112,7 +112,7 @@ def train_PPO(policy_path, critic_path, n_iters=100, auto_shutdown=False, save_c
                 optim.zero_grad()
 
         collector.update_policy_weights_()
-        if it % 200 == 0 and save_checkpoint:
+        if it % 60 == 0 and save_checkpoint:
             torch.save(policy.state_dict(), 'policy_checkpoint.pth')
             torch.save(critic.state_dict(), 'critic_checkpoint.pth')
 
