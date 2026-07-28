@@ -1,3 +1,4 @@
+import os
 import torch
 from torch import nn, Tensor
 from functools import partial
@@ -258,13 +259,17 @@ def make_policy_critic(env, policy_model_path=None, critic_model_path=None):
         in_keys=["state"],
         out_keys=[("agents", "state_value")],
     )
-    # Load the full model object
-    if policy_model_path is not None and critic_model_path is not None:
-        loaded_policy = torch.load(policy_model_path)
-        policy.load_state_dict(loaded_policy)
+    # Load the full model object if valid paths were provided.
+    if policy_model_path and critic_model_path:
+        if os.path.exists(policy_model_path) and os.path.exists(critic_model_path):
+            loaded_policy = torch.load(policy_model_path)
+            policy.load_state_dict(loaded_policy)
 
-        # Load the full model object
-        loaded_critic = torch.load(critic_model_path)
-        critic.load_state_dict(loaded_critic)
-
+            loaded_critic = torch.load(critic_model_path)
+            critic.load_state_dict(loaded_critic)
+            print('Model loaded successfully')
+        else:
+            print(f"Skipping checkpoint load because one or both files were not found: {policy_model_path}, {critic_model_path}")
+    else:
+        print('Using random models')
     return policy, critic

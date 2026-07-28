@@ -242,7 +242,7 @@ class MahjongGameEnv(AECEnv):
             if new_shanten < prev_shanten:
                 self.rewards[agent] += 0.01
             elif new_shanten > prev_shanten:
-                self.rewards[agent] -= 0.01
+                self.rewards[agent] -= 0.012
             else:
                 assert new_shanten == prev_shanten
         elif self.gamestate.phase == WAIT_RESPONSE:

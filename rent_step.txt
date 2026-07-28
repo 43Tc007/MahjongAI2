@@ -1,0 +1,19 @@
+1. Rent, CPU, upload
+	critic_checkpoint 
+	policy_checkpoint 
+	ai_setup  
+	benchmark 
+	fan_calculator 
+	hand_divisor
+	mahjong helper
+	env_simplified
+	test agent
+	train
+2. Dependencies
+	pip install torchrl pettingzoo
+3. Open GPU
+4. benchmark -> 1 2 4 8 16 25?
+5. find the best num worker
+6. train
+	python train.py --policy_path policy_checkpoint --critic_path critic_checkpoint --n_iters ? --auto_shutdown 1 --save_checkpoint 1 --save_final 1 --num_workers ?
+7. extract the useful pth and delete all

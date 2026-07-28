@@ -348,7 +348,7 @@ class MahjongGameEnv(AECEnv):
                             break
                         drawn_tile = draw_tile(self.gamestate, self.gamestate.current_player, self.gamestate.wall)
                 # After flower handling, check if we broke due to tsumo possibility
-                if self.mask.sum() >= 2:
+                if self.mask.sum() >= 2 and is_flower(drawn_tile):
                     break
                 # If no tsumo and no flowers, transition to WAIT_TSUMO_ADD_KAN_AN_KAN
                 if self.gamestate.phase == WAIT_HUA_HU:

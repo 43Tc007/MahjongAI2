@@ -10,11 +10,11 @@ from ai_setup import make_policy_critic
 import os
 import argparse
 
-def train_PPO(n_iters=100):
+def train_PPO(policy_path, critic_path, n_iters=100, auto_shutdown=False, save_checkpoint=True, save_final=True, num_workers=4):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(device)
     env = make_env()
-    policy, critic = make_policy_critic(env, 'policy_8.pth', 'critic_8.pth')
+    policy, critic = make_policy_critic(env, policy_path, critic_path)
 
     policy = policy.to(device)
     loss_module = ClipPPOLoss(
@@ -57,7 +57,7 @@ def train_PPO(n_iters=100):
     )
     policy=policy.to(device)
     collector = MultiSyncCollector(
-        [make_env] * 12,
+        [make_env] * num_workers,
         policy=policy,
         device='cpu',
         storing_device=device,
@@ -112,16 +112,31 @@ def train_PPO(n_iters=100):
                 optim.zero_grad()
 
         collector.update_policy_weights_()
-        if it % 200 == 0 and it > 0:
-            torch.save(policy.state_dict(), 'policy_9.pth')
-            torch.save(critic.state_dict(), 'critic_9.pth')
+        if it % 200 == 0 and save_checkpoint:
+            torch.save(policy.state_dict(), 'policy_checkpoint.pth')
+            torch.save(critic.state_dict(), 'critic_checkpoint.pth')
 
-    torch.save(policy.state_dict(), 'policy_9.pth')
-    torch.save(critic.state_dict(), 'critic_9.pth')
-    os.system("shutdown /s /t 0")
+    if save_final:
+        torch.save(policy.state_dict(), 'policy_28072026_1.pth')
+        torch.save(critic.state_dict(), 'critic_28072026_1.pth')
+    if auto_shutdown:
+        os.system("shutdown /s /t 0")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n_iters", type=int, default=400, help="Number of training iterations")
+    parser.add_argument("--policy_path", type=str, default='', help="Number of training iterations")
+    parser.add_argument("--critic_path", type=str, default='', help="Policy path")
+    parser.add_argument("--n_iters", type=int, default=400, help="Critic path")
+    parser.add_argument("--auto_shutdown", type=int, default=0, help="Shutdown after training")
+    parser.add_argument("--save_checkpoint", type=int, default=1, help="save_checkpoint")
+    parser.add_argument("--save_final", type=int, default=1, help="save_final")
+    parser.add_argument("--num_workers", type=int, default=4, help="num_workers")
     args = parser.parse_args()
-    train_PPO(n_iters=args.n_iters)
+    train_PPO(
+        policy_path=args.policy_path, 
+        critic_path=args.critic_path, 
+        n_iters=args.n_iters, 
+        auto_shutdown=bool(args.auto_shutdown), 
+        save_checkpoint=bool(args.save_checkpoint), 
+        save_final=bool(args.save_final)
+    )
