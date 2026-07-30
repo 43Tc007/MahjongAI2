@@ -46,6 +46,8 @@ def pack_to_str(p: Tuple[int, int]) -> str:
 
 
 def orphan_shanten(hand_array: np.ndarray) -> int:
+    if hand_array.sum() != 13:
+        return 8
     counts = [int(x) for x in hand_array[:TILE_COUNT]]
     orphan_indices = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
     present = [idx for idx in orphan_indices if counts[idx] > 0]

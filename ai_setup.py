@@ -4,6 +4,7 @@ from torch import nn, Tensor
 from functools import partial
 from tensordict.nn import TensorDictModule
 from torchrl.modules import ProbabilisticActor, MaskedCategorical
+from tensordict.nn import InteractionType
 
 # ---------------------------------------------------------------------
 # 1. Core building blocks (unchanged)
@@ -237,7 +238,8 @@ def make_policy_critic(env, policy_model_path=None, critic_model_path=None):
         }, # type: ignore
         out_keys=[env.action_key],
         distribution_class=MaskedCategorical,
-        return_log_prob=True
+        return_log_prob=True,
+        default_interaction_type=InteractionType.RANDOM
     )
 
     

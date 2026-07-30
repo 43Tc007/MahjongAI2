@@ -80,7 +80,7 @@ def train_PPO(policy_path, critic_path, n_iters=100, auto_shutdown=False, save_c
             .expand(tensordict_data.get_item_shape(("next", env.reward_key))),
         )
         # We need to expand the done and terminated to match the reward shape (this is expected by the value estimator)
-
+        
         with torch.no_grad():
             GAE(
                 tensordict_data,
@@ -117,9 +117,11 @@ def train_PPO(policy_path, critic_path, n_iters=100, auto_shutdown=False, save_c
             torch.save(critic.state_dict(), 'critic_checkpoint.pth')
 
     if save_final:
-        torch.save(policy.state_dict(), 'policy_28072026_1.pth')
-        torch.save(critic.state_dict(), 'critic_28072026_1.pth')
+        torch.save(policy.state_dict(), 'policy_fin.pth')
+        torch.save(critic.state_dict(), 'critic_fin.pth')
     if auto_shutdown:
+        # shutil.move('/home/user/Documents/report.txt', '/home/user/Backup/')
+        # os.system("/usr/bin/shutdown")
         os.system("shutdown /s /t 0")
 
 if __name__ == "__main__":
