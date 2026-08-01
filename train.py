@@ -7,6 +7,7 @@ from torchrl.data.replay_buffers.storages import LazyTensorStorage
 from torchrl.objectives import ClipPPOLoss, ValueEstimators
 from env_simplified import make_env
 from ai_setup import make_policy_critic
+from torchrl.envs.utils import ExplorationType
 import os
 import argparse
 
@@ -43,7 +44,7 @@ def train_PPO(policy_path, critic_path, n_iters=100, auto_shutdown=False, save_c
     loss_module = loss_module.to(device)
 
     num_epochs = 5
-    max_grad_norm = 0.2
+    max_grad_norm = 0.15
     frames_per_batch = 2048  # Number of team frames collected per training iteration
     total_frames = frames_per_batch * n_iters
     minibatch_size = 256
@@ -63,7 +64,8 @@ def train_PPO(policy_path, critic_path, n_iters=100, auto_shutdown=False, save_c
         storing_device=device,
         frames_per_batch=frames_per_batch,
         total_frames=total_frames,
-        cat_results=0
+        cat_results=0,
+        exploration_type=ExplorationType.RANDOM # type: ignore
     )
     from tqdm.auto import tqdm
     for it, tensordict_data in enumerate(tqdm(collector)):
